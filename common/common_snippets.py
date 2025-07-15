@@ -1,5 +1,54 @@
 import hashlib
 
+from collections.abc import Sequence
+from typing import Any, Dict, List, Tuple, Union
+
+class StringHelper:
+    @staticmethod
+    def build_where_clause(
+        filters: Dict[str, Tuple[str, Any | Sequence[Union[int, str]]]]
+    ) -> Tuple[str, List[Any]]:
+        """
+        Build a SQL WHERE clause from filters.
+        - Single values -> `col = ?`
+        - IN/NOT IN lists -> `col IN (?, ?, …)`
+        """
+        if not filters:
+            return "", []
+
+        conditions: List[str] = []
+        params: List[Any] = []
+
+        for column, (operator, value) in filters.items():
+            # skip nulls
+            if value is None:
+                continue
+
+            op = operator.strip().upper()
+            match op:
+                case "IN" | "NOT IN":
+                    # ensure a non-string iterable
+                    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+                        raise TypeError(f"Value for {op} must be a non-string sequence")
+                    # empty list edge-case
+                    if not value:
+                        # IN () is invalid SQL; fall back to always-false/true
+                        conditions.append("1=0" if op == "IN" else "1=1")
+                    else:
+                        placeholders = ", ".join("?" for _ in value)
+                        conditions.append(f"{column} {op} ({placeholders})")
+                        params.extend(value)
+
+                case _:
+                    # single-value operators shouldn’t get a list
+                    if isinstance(value, Sequence) and not isinstance(value, (str, bytes)):
+                        raise TypeError(f"Operator {op} does not support sequence values")
+                    conditions.append(f"{column} {operator} ?")
+                    params.append(value)
+
+        where_clause = f" WHERE {' AND '.join(conditions)}" if conditions else ""
+        return where_clause, params
+
 def compute_definition_hash(
     *,
     source_type: str,
