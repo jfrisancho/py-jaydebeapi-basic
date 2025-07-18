@@ -327,3 +327,102 @@ def _select_random_poc_pair_with_coverage_guidance(self, sampling_universe, conf
     
     # Fallback to original random selection
     return self._select_random_poc_pair(sampling_universe, config)
+
+def print_sampling_statistics(metrics, coverage_stats, elapsed_time, config):
+    '''Print comprehensive sampling statistics and return calculated metrics.'''
+    
+    # Calculate derived statistics
+    success_rate = (metrics.total_paths_found / metrics.total_attempts * 100) if metrics.total_attempts > 0 else 0
+    failure_rate = 100 - success_rate
+    paths_per_second = metrics.total_paths_found / elapsed_time if elapsed_time > 0 else 0
+    attempts_per_second = metrics.total_attempts / elapsed_time if elapsed_time > 0 else 0
+    attempts_per_path = metrics.total_attempts / metrics.total_paths_found if metrics.total_paths_found > 0 else float('inf')
+    
+    # Calculate coverage gap
+    target_coverage_pct = config.coverage_target * 100
+    actual_coverage_pct = coverage_stats['combined_coverage_pct']
+    coverage_gap = target_coverage_pct - actual_coverage_pct
+    
+    # Format duration as MM:SS
+    minutes = int(elapsed_time // 60)
+    seconds = int(elapsed_time % 60)
+    duration_mmss = f'{minutes:02d}:{seconds:02d}'
+    
+    # Calculate efficiency rating
+    if success_rate >= 50:
+        efficiency_rating = 'Excellent'
+    elif success_rate >= 30:
+        efficiency_rating = 'Good'
+    elif success_rate >= 15:
+        efficiency_rating = 'Fair'
+    else:
+        efficiency_rating = 'Poor'
+    
+    # Calculate universe utilization
+    total_universe_size = getattr(metrics, 'total_universe_size', 0)
+    universe_utilization = (metrics.toolsets_sampled / total_universe_size * 100) if total_universe_size > 0 else 0
+    
+    # Print statistics
+    print('')
+    print('----------------------------------------')
+    print('RANDOM SAMPLING STATISTICS')
+    print('----------------------------------------')
+    print(' - SAMPLING PERFORMANCE:')
+    print(f'   Total Attempts:      {metrics.total_attempts:,}')
+    print(f'   Paths Found:         {metrics.total_paths_found:,}')
+    print(f'   Paths Not Found:     {metrics.failed_attempts:,}')
+    print(f'   Success Rate:        {success_rate:.2f}%')
+    print(f'   Failure Rate:        {failure_rate:.2f}%')
+    print('')
+    print(' - TIMING INFORMATION:')
+    print(f'   Total Duration:      {elapsed_time:.2f} seconds')
+    print(f'   Paths per Second:    {paths_per_second:.2f}')
+    print(f'   Attempts per Second: {attempts_per_second:.2f}')
+    print(f'   Duration (MM:SS):    {duration_mmss}')
+    print('')
+    print(' - COVERAGE ACHIEVED:')
+    print(f'   Target Coverage:     {target_coverage_pct:.2f}%')
+    print(f'   Actual Coverage:     {actual_coverage_pct:.2f}%')
+    print(f'   Node Coverage:       {coverage_stats["node_coverage_pct"]:.2f}%')
+    print(f'   Link Coverage:       {coverage_stats["link_coverage_pct"]:.2f}%')
+    print(f'   Coverage Gap:        {coverage_gap:.2f}% below target')
+    print('')
+    print(' - EFFICIENCY ANALYSIS:')
+    print(f'   Attempts per Path:   {attempts_per_path:.2f}')
+    print(f'   Efficiency Rating:   {efficiency_rating}')
+    print(f'   Universe Utilization: {universe_utilization:.2f}%')
+    print('')
+    print(' - RECOMMENDATIONS:')
+    
+    # Generate recommendations
+    recommendations = []
+    if coverage_gap > 10:
+        recommendations.append('Significant coverage gap - may need more sampling or constraint adjustment')
+    elif coverage_gap > 5:
+        recommendations.append('Moderate coverage gap - consider extending sampling duration')
+    
+    if success_rate < 15:
+        recommendations.append('Low success rate - consider relaxing path constraints')
+    
+    if attempts_per_path > 10:
+        recommendations.append('High attempts per path - network connectivity may be sparse')
+    
+    if universe_utilization < 20:
+        recommendations.append('Low universe utilization - consider broader sampling strategy')
+    
+    if not recommendations:
+        recommendations.append('Sampling performance is within acceptable parameters')
+    
+    for rec in recommendations:
+        print(f'     {rec}')
+    
+    return {
+        'success_rate': success_rate,
+        'failure_rate': failure_rate,
+        'paths_per_second': paths_per_second,
+        'attempts_per_second': attempts_per_second,
+        'attempts_per_path': attempts_per_path,
+        'efficiency_rating': efficiency_rating,
+        'universe_utilization': universe_utilization,
+        'coverage_gap': coverage_gap
+    }
