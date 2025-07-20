@@ -324,10 +324,11 @@ CREATE TABLE tb_validation_tests (
 CREATE TABLE tb_validation_outcomes (
     id INTEGER AUTO_INCREMENT PRIMARY KEY,
     validation_test_id INTEGER REFERENCES tb_validation_tests(id) ON DELETE CASCADE NOT NULL,
-    
+
+    object_type VARCHAR(16) NOT NULL, -- NODE, LINK, POC, PATH,..
     tag_type VARCHAR(16) NOT NULL,      -- QA, RISK, INS, CRIT, UTY, CAT, DAT, FAB, SCENARIO
     tag_code VARCHAR(48) NOT NULL,
-    tag VARCHAR(64),
+    tag VARCHAR(80), -- Cocatenates object_type, tag_type and tag_code with underscore.
 );
 
 -- 11. Validation Errors: Enhanced error tracking
