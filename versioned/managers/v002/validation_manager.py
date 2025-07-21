@@ -28,10 +28,10 @@ class ValidationScope(Enum):
 class ValidationManager:
     """Comprehensive path validation framework."""
     
-    def __init__(self, db: Database):
+    def __init__(self, db: Database, verbose: bool = False, silent: bool = False):
         self.db = db
-        self.validation_tests = {}
-        self._load_validation_tests()
+
+        self.validation_tests = self._load_validation_tests()
 
     def validate_run_paths(self, run_id: str) -> Dict[str, Any]:
         """Validate all paths in a run and return comprehensive results."""
