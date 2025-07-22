@@ -252,7 +252,7 @@ CREATE TABLE tb_path_executions (
     path_id INTEGER REFERENCES tb_paths(id) ON DELETE CASCADE NOT NULL,
     
     execution_status VARCHAR(16) NOT NULL,
-    execution_time_ms INTEGER,
+    execution_time_s FLOAT,
    
     -- Path metrics
     node_count INTEGER DEFAULT 0 NOT NULL,
@@ -268,7 +268,7 @@ CREATE TABLE tb_path_executions (
     path_context CLOB,  -- String with nodes/links sequence
 
     validation_passed BIT(1),
-    validation_errors CLOB,
+    -- validation_errors CLOB,
 
     executed_at TIMESTAMP DEFAULT now() NOT NULL
 );
