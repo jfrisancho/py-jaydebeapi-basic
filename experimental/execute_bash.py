@@ -1,7 +1,53 @@
 from itertools import islice
+import math
 import jaydebeapi
 
 class Database:
+    # …
+
+    def executemany_batch(
+        self,
+        sql: str,
+        params_list: list[list[object]],
+        chunk_size: int = 1000
+    ) -> int:
+        """
+        Execute the same SQL statement multiple times with different parameters,
+        in batches for efficiency, and print progress per chunk.
+
+        :param sql:          SQL statement with '?' placeholders
+        :param params_list:  List of parameter sequences
+        :param chunk_size:   Number of rows to send per batch
+        :returns:            Total number of rows “sent” (i.e. len(params_list))
+        """
+        def _chunked(it, size):
+            it = iter(it)
+            while batch := list(islice(it, size)):
+                yield batch
+
+        total_rows = len(params_list)
+        total_chunks = math.ceil(total_rows / chunk_size)
+        printed = not getattr(self, "silence", False)
+
+        total = 0
+        try:
+            with self.cursor() as cur:
+                for idx, batch in enumerate(_chunked(params_list, chunk_size), start=1):
+                    cur.executemany(sql, batch)
+                    total += len(batch)
+
+                    if printed:
+                        print(f"[{idx}/{total_chunks}] chunk inserted {len(batch)} rows")
+
+            self._conn.commit()
+        except jaydebeapi.DatabaseError as err:
+            if printed:
+                print(f"    x Bulk insert failed on chunk {idx}: {err}")
+            raise
+
+        if printed:
+            print(f"Done — {total} rows in {total_chunks} chunks.")
+        return total
     # …
 
     def execute_bash(
