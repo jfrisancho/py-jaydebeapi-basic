@@ -1,4 +1,4 @@
-def find_equipment_poc_connections(
+8def find_equipment_poc_connections(
     db: Database,
     equipment_pocs: list[tuple],
     equipment_poc_nodes: dict[int, list[tuple]]
@@ -169,3 +169,19 @@ def find_equipment_poc_connections(
 
     print(f'       - Analysis complete. Found {len(connections)} connections.')
     return connections
+
+
+import psutil
+import time
+
+process = psutil.Process()
+for _ in range(10):
+    print(f'CPU: {process.cpu_percent()}% | Memory: {process.memory_info().rss / 1024**2:.2f} MB')
+    time.sleep(1)
+
+
+import time
+
+start = time.perf_counter()
+paths = find_downstream_path(...)
+print(f'Pathfinding took {time.perf_counter() - start:.3f}s')
