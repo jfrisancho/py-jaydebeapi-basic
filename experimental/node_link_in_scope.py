@@ -45,3 +45,44 @@ def fetch_link_ids_in_scope(
     # 3) Stream it back in batches of `fetch_size`
     for row in self.db.stream_query(sql, params, fetch_size):
         yield row[0]
+
+
+
+def _stream_links_in_scope(
+    self, 
+    config: RandomRunConfig
+) -> Iterator[int]:
+    """Stream links directly using config filters - no intermediate nodes needed."""
+    filters = {}
+    
+    if config.fab_no:
+        filters['(n1.fab_no'] = ('=', config.fab_no)
+        filters['n2.fab_no)'] = ('=', config.fab_no)
+    if config.model_no:
+        filters['(n1.model_no'] = ('=', config.model_no) 
+        filters['n2.model_no)'] = ('=', config.model_no)
+    if config.phase_no:
+        filters['(sh1.phase_no'] = ('=', config.phase_no)
+        filters['sh2.phase_no)'] = ('=', config.phase_no)
+    if config.e2e_group_nos:
+        if len(config.e2e_group_nos) == 1:
+            filters['(n1.e2e_group_no'] = ('=', config.e2e_group_nos[0])
+            filters['n2.e2e_group_no)'] = ('=', config.e2e_group_nos[0])
+        else:
+            filters['(n1.e2e_group_no'] = ('IN', config.e2e_group_nos)
+            filters['n2.e2e_group_no)'] = ('IN', config.e2e_group_nos)
+    
+    where_clause, params = StringHelper.build_where_clause(filters)
+    
+    sql = f"""
+        SELECT DISTINCT l.link_id
+        FROM nw_link l
+        JOIN nw_node n1 ON l.start_node_id = n1.node_id
+        JOIN nw_node n2 ON l.end_node_id = n2.node_id
+        LEFT JOIN org_shape sh1 ON sh1.node_id = n1.node_id
+        LEFT JOIN org_shape sh2 ON sh2.node_id = n2.node_id
+        {where_clause}
+    """
+    
+    for row in self.db.query_iterator(sql, params):
+        yield row[0
