@@ -1,3 +1,16 @@
+forbidden = set(self.forbidden_node_ids)
+existing = set(self.node_ids)
+
+additional_node_ids: set[int] = {
+    node_id
+    for row in link_rows
+    if row
+    for node_id in (row[2], row[3])
+    if node_id not in forbidden and node_id not in existing
+}
+
+
+
 def batch_insert_connections(db: Database, connection_data: list[tuple]) -> int:
     """
     Insert equipment connection data using optimized batch execution for large datasets.
