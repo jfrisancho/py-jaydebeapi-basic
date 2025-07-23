@@ -49,3 +49,31 @@ def batch_insert_connections(db: Database, connection_data: list[tuple]) -> int:
     except Exception as e:
         print(f'✗ Failed to insert equipment connections: {e}')
         raise
+
+
+def stream_query(
+        self,
+        sql: str,
+        params: Optional[list[Any]] = None,
+        fetch_size: int = 5_000,
+    ) -> Iterator[tuple]:
+        """
+        Execute a SELECT but fetch in batches of `fetch_size`, yielding row by row.
+        """
+        cur = self._conn.cursor()
+        try:
+            cur.execute(sql, params or [])
+            while True:
+                batch = cur.fetchmany(fetch_size)
+                if not batch:
+                    break
+                for row in batch:
+                    yield row
+        finally:
+            cur.close()
+
+for node_id, s_node, e_node in db.stream_query(
+    "SELECT id, s_node_id, e_node_id FROM nw_links WHERE …",
+    fetch_size=10_000
+):
+    # process one link at a time, tiny memory footprint
