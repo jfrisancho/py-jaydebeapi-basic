@@ -1,6 +1,6 @@
 `orjson` is significantly faster than the standard `json` library. Let me update the code to use `orjson` for better performance:
 
-```
+```python
 """
 Coverage Scope Cache Manager
 
