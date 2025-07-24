@@ -1,6 +1,6 @@
 Comprehensive cache manager that can handle large-scale data efficiently using disk-based caching with compression and memory mapping for optimal performance.
 
-````
+```python
 """
 Coverage Scope Cache Manager
 
