@@ -1,5 +1,6 @@
-You're absolutely right! `orjson` is significantly faster than the standard `json` library. Let me update the code to use `orjson` for better performance:
+`orjson` is significantly faster than the standard `json` library. Let me update the code to use `orjson` for better performance:
 
+```
 """
 Coverage Scope Cache Manager
 
@@ -571,9 +572,10 @@ class CacheScopeManager:
                 
         except Exception as e:
             logger.error(f"Failed to clean up orphaned files: {e}")
-
+```
 
 # Usage example
+```
 def create_cache_manager() -> CacheScopeManager:
     """Create and configure the cache manager."""
     return CacheScopeManager(
@@ -582,8 +584,7 @@ def create_cache_manager() -> CacheScopeManager:
         max_entries=50,          # Reasonable number of scope variations
         ttl_hours=48            # Cache for 2 days
     )
-
-Excellent point! Here's why `orjson` is a much better choice:
+```
 
 ## Performance Benefits of orjson:
 
