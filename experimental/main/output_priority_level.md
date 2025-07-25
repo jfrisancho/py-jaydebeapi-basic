@@ -8,7 +8,7 @@ The general rule is: **more restrictive options should override less restrictive
 4. Interactive mode prompts (only if no conflicting flags)
 
 ## Implementation Strategy
-```
+```python
 from enum import Enum
 from typing import Optional
 
@@ -75,8 +75,10 @@ def should_print_normal(output_level: OutputLevel) -> bool:
 def should_prompt_user(output_level: OutputLevel) -> bool:
     """Check if user prompts are allowed."""
     return output_level in [OutputLevel.SILENT, OutputLevel.NORMAL, OutputLevel.VERBOSE]
+```
 
 # Example usage in main function
+```python
 def main():
     parser = create_parser()
     args = parser.parse_args()
@@ -120,9 +122,10 @@ def validate_argument_conflicts(args):
         for conflict in conflicts:
             print(f"  - {conflict}")
         print()
+```
 
 ## Updated Argument Parser with Better Help Text
-
+```python
 def create_parser() -> argparse.ArgumentParser:
     """Create command line argument parser."""
     parser = argparse.ArgumentParser(
