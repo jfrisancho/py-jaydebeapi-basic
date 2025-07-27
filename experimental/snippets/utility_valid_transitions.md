@@ -16,7 +16,7 @@ O(1) average time for B in mapping[A]
 ---
 
 ✅ Optimized Function for Lookup
-
+```python
 class UtilityValidator:
     _valid_transitions: dict[int, set[int]] = {
         42: {176, 188},
@@ -36,21 +36,20 @@ class UtilityValidator:
     def is_valid_transition(from_util: int, to_util: int) -> bool:
         """Check if a utility transition is valid in O(1) time."""
         return to_util in UtilityValidator._valid_transitions.get(from_util, set())
-
+```
 
 ---
 
 🧪 Usage (in your path traversal loop)
-
+```python
 if UtilityValidator.is_valid_transition(curr_util, next_util):
     # Valid transition
     ...
 else:
     # Invalid utility transition
     ...
+```
 
-
----
 
 🧠 Performance Characteristics
 
@@ -70,11 +69,10 @@ This is already the most efficient lookup mechanism in Python 3.11 for this type
 
 Only needed if profiling shows it's a bottleneck:
 
-Use @classmethod + __slots__ to avoid class instantiation overhead.
+Use `@classmethod` + `__slots__` to avoid class instantiation overhead.
 
-Precompile valid pairs into a frozenset[tuple[int, int]] if directionality is critical.
+Precompile valid pairs into a `frozenset[tuple[int, int]]` if directionality is critical.
 
 Use Numba if this is called inside numeric-heavy vectorized loops.
-
 
 But for your current use case — dict of sets is optimal.
